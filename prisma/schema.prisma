@@ -1,0 +1,251 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  role          Role      @default(USER)
+  
+  // Profile fields
+  phone         String?
+  address       String?
+  city          String?
+  zipCode       String?
+  country       String?
+  
+  // Stats
+  totalOrders   Int       @default(0)
+  totalSpent    Float     @default(0)
+
+   // resetToken
+  resetPasswordToken           String?
+  resetPasswordExpiry     DateTime?
+
+  
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+  
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  orders        Order[]
+  cartItems     CartItem[]
+  wishlistItems WishlistItem[]
+  reviews       Review[]
+  
+  // Indexes
+  @@index([email])
+  @@index([createdAt])
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============ E-COMMERCE MODELS ============
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  products  Product[]
+  createdAt DateTime @default(now())
+}
+
+model Product {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?
+  price       Float
+  salePrice   Float?
+
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id])
+
+  images      String[]
+  colors      String[]
+  sizes       String[]
+  features    String[]
+  rating      Float     @default(0)
+  reviewCount Int       @default(0)
+  isFeatured  Boolean   @default(false)
+  isActive    Boolean   @default(true)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  orders      OrderItem[]
+  cartItems   CartItem[]
+  wishlist    WishlistItem[]
+  reviews     Review[]
+
+  @@index([categoryId])
+  @@index([price])
+  @@index([rating])
+  @@index([createdAt])
+}
+
+model Order {
+  id             String    @id @default(uuid())
+  orderNumber    String    @unique
+  userId         String
+  user           User      @relation(fields: [userId], references: [id])
+
+  status         OrderStatus @default(PENDING)
+  paymentStatus  PaymentStatus @default(PENDING)
+
+  totalAmount    Float
+  subtotal       Float
+  shippingFee    Float
+  taxAmount      Float
+
+  paymentMethod  PaymentMethod
+
+  paymentProof   String?   // upload bukti transfer
+  paidAt         DateTime?
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  items          OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  productId String
+  quantity  Int      @default(1)
+  price     Float
+  color     String?
+  size      String?
+  
+  order     Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+  
+  @@unique([orderId, productId, color, size])
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  quantity  Int      @default(1)
+  color     String?
+  size      String?
+  addedAt   DateTime @default(now())
+  
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+  
+  @@unique([userId, productId, color, size])
+  @@index([userId])
+}
+
+model WishlistItem {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  addedAt   DateTime @default(now())
+  
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+  
+  @@unique([userId, productId])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int
+  comment   String?
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@unique([productId, userId]) // 1 user cuma bisa review 1x
+}
+
+// ============ ENUMS ============
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  PAYPAL
+  BANK_TRANSFER
+  COD
+  E_WALLET
+}
+
+enum CartStatus {
+  ACTIVE
+  CANCELED
+  ORDERED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+

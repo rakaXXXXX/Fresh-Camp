@@ -1,0 +1,5 @@
+next-auth
+@prisma/client
+prisma
+bcryptjs
+@types/bcryptjs
