@@ -1,4 +1,4 @@
-# WebsiteKIK - Fullstack E-Commerce Platform
+# Fresh Camp - Fullstack E-Commerce Platform
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat&logo=next.js)](https://nextjs.org)
 [![Prisma](https://img.shields.io/badge/Prisma-5.19.0-2984C5?style=flat&logo=prisma)](https://prisma.io)
