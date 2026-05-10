@@ -1,4 +1,4 @@
-// /api/checkout
+import { NextResponse } from 'next/server'
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth";
@@ -9,7 +9,7 @@ export async function POST() {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const userId = session.user.id;
 
@@ -19,7 +19,7 @@ export async function POST() {
     });
 
     if (cartItems.length === 0) {
-      return Response.json({ error: "Cart kosong" }, { status: 400 });
+      return NextResponse.json({ error: "Cart kosong" }, { status: 400 });
     }
 
     let subtotal = 0;
@@ -61,13 +61,13 @@ export async function POST() {
       where: { userId },
     });
 
-    return Response.json({
+    return NextResponse.json({
       orderNumber,
       total,
     });
   } catch (error) {
     console.error('Checkout error:', error);
-    return Response.json({ error: 'Checkout failed: ' + error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Checkout failed: ' + error.message }, { status: 500 });
   }
 }
 

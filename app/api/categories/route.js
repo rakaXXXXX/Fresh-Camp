@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server'
 import prisma from "@/lib/prisma"
 
 export const dynamic = 'force-dynamic'
@@ -16,9 +17,9 @@ export async function GET() {
       orderBy: { name: "asc" },
       include: { _count: { select: { products: { where: { isActive: true } } } } }
     })
-    return Response.json(categories)
+    return NextResponse.json(categories)
   } catch (error) {
     console.error('Categories API error:', error)
-    return Response.json({ error: `Failed to fetch categories: ${error.message}` }, { status: 500 })
+    return NextResponse.json({ error: `Failed to fetch categories: ${error.message}` }, { status: 500 })
   }
 }

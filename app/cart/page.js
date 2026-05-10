@@ -12,7 +12,7 @@ import { useCart } from '@/hooks/useCart'
 
 export default function CartPage() {
   const { data: session, status } = useSession()
-const router = useRouter()
+  const router = useRouter()
   const { 
     cartItems, 
     loading, 
@@ -61,10 +61,19 @@ const router = useRouter()
     }
   }
 
+  // Handle session loading state first
   if (status === 'loading') {
-    return <div>Loading...</div>
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8B9D83] mx-auto mb-4"></div>
+          <p className="text-gray-600">Checking session...</p>
+        </div>
+      </div>
+    )
   }
 
+  // Redirect unauthenticated users
   if (status === 'unauthenticated') {
     router.push('/login')
     return null
@@ -74,7 +83,8 @@ const router = useRouter()
     return null
   }
 
-if (loading) {
+  // Only show cart loading if session is authenticated AND cart is still loading
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -198,7 +208,7 @@ if (loading) {
 
                               <div className="text-right">
 <span className="text-2xl font-bold text-[#8B9D83]">
-  ${(getItemPrice(item) * item.quantity).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+  Rp.{(getItemPrice(item) * item.quantity).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
 </span>
 <div className="text-sm text-gray-500 line-through">
   {item.product?.salePrice ? `$${(item.product.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : ''}
@@ -263,7 +273,7 @@ if (loading) {
                   <div className="space-y-4 mb-6">
                     <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
-                      <span className="font-medium">${calculateSubtotal().toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                      <span className="font-medium">RP.{calculateSubtotal().toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                     </div>
                     
                     <div className="flex justify-between">
@@ -286,19 +296,19 @@ if (loading) {
                     
                     {calculateSubtotal() < 200 && calculateShipping() > 0 && (
                       <div className="text-sm text-blue-600 bg-blue-50 p-2 rounded">
-                        Spend $${(200 - calculateSubtotal()).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} more for free shipping
+                        Spend ${(200 - calculateSubtotal()).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} more for free shipping
                       </div>
                     )}
                     
                     <div className="flex justify-between">
                       <span className="text-gray-600">Tax (10%)</span>
-                      <span className="font-medium">${calculateTax().toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                      <span className="font-medium">Rp.{calculateTax().toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                     </div>
                     
                     <div className="border-t border-gray-200 pt-4">
                       <div className="flex justify-between text-lg font-bold">
                         <span>Total</span>
-                        <span className="text-[#8B9D83]">${calculateTotal().toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        <span className="text-[#8B9D83]">RP.{calculateTotal().toLocaleString('en-Rp', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                       </div>
                     </div>
                   </div>
@@ -346,3 +356,4 @@ if (loading) {
     </div>
   )
 }
+

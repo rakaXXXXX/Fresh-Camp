@@ -209,7 +209,7 @@ export default function RegisterPage() {
               {/* Confirm Password Input */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Konfirmasi Password
+                  Confirm Password
                 </label>
                 <div className="relative">
                   <Input

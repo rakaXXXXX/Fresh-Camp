@@ -100,10 +100,9 @@ export default function CategoryContent() {
   const handleAddToCart = async (productId, quantity = 1, selectedSize = null, selectedColor = null) => {
     try {
       await cartHook.addToCart(productId, quantity, selectedSize, selectedColor)
-      alert('Added to cart!')
     } catch (error) {
       console.error('Add to cart error:', error)
-      alert('Failed to add to cart: ' + error.message)
+      cartHook.showCartToast('Gagal menambahkan ke keranjang: ' + error.message, 'error')
     }
   }
 
@@ -199,7 +198,7 @@ export default function CategoryContent() {
               >
                 <div className="relative aspect-square overflow-hidden bg-gray-100">
                   <img
-                    src={product.images?.[0] || product.image || '/placeholder-product.jpg'}
+                    src={product.images?.[0] || '/placeholder-product.jpg'}
                     alt={product.name}
                     loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"

@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
@@ -49,7 +50,7 @@ export async function GET(request) {
       prisma.product.count({ where })
     ])
 
-    return Response.json({
+    return NextResponse.json({
       products,
       pagination: {
         page,
@@ -60,7 +61,7 @@ export async function GET(request) {
     })
   } catch (error) {
     console.error('Products API error:', error)
-    return Response.json({ 
+    return NextResponse.json({ 
       error: `Failed to fetch products: ${error.message || error.code || 'Unknown error'}`
     }, { status: 500 })
   }

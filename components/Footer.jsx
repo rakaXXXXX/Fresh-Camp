@@ -62,15 +62,19 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-start space-x-3">
                 <MapPin className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-white/80">123 Mountain View Rd, Adventure City</span>
+                <span className="text-sm text-white/80">Klampok, Malang, Indonesia</span>
               </li>
               <li className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 flex-shrink-0" />
-                <span className="text-sm text-white/80">+1 (555) 123-4567</span>
+                <span className="text-sm text-white/80">+62 823-1348-3799</span>
               </li>
               <li className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 flex-shrink-0" />
-                <span className="text-sm text-white/80">info@freshcamp.com</span>
+                <a 
+                  href="mailto:freshcamp03@gmail.com" 
+                  className="text-sm text-white/80 hover:text-white transition-colors"
+                >freshcamp03@gmail.com
+                </a>
               </li>
             </ul>
           </div>

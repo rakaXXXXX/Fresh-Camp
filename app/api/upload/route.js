@@ -1,7 +1,6 @@
-import cloudinary from '@/lib/cloudinary'
-import { v2 as cloudinaryV2 } from 'cloudinary'
+import { NextResponse } from 'next/server'
+import { v2 as cloudinary } from 'cloudinary'
 
-// Ensure config loaded
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -12,69 +11,66 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(req) {
   try {
+    console.log('🔄 Upload started')
+    
     const data = await req.formData()
     const file = data.get('file')
 
     if (!file) {
-      return new Response("No file provided", { status: 400 })
+      return NextResponse.json({ error: "No file" }, { status: 400 })
     }
 
-    // Validasi ukuran file (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      return new Response("File too large. Max 5MB", { status: 400 })
-    }
+    console.log('📁 File:', file.name, file.size)
 
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    const filename = Date.now() + `_${Math.random().toString(36).substring(7)}.${file.name.split('.').pop() || 'jpg'}`
+    const publicId = `products/${Date.now()}_${Math.random().toString(36).substring(7)}`
 
-    console.log('Uploading to Cloudinary:', filename, file.size)
+    console.log('☁️ Uploading:', publicId)
 
+    // UPLOAD & OPTIMIZE SEBELUM resolve
     const result = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinaryV2.uploader.upload_stream(
+      const stream = cloudinary.uploader.upload_stream(
         { 
-          resource_type: "auto",
-          folder: "products",  // ✅ FIXED: products folder for product images
-          public_id: filename.replace(/\.[^/.]+$/, ""), // No extension in public_id
-          transformation: [
-            { width: 800, height: 800, crop: "fill", gravity: "auto" }, // Product card optimized
-            { width: 400, height: 400, crop: "fill", gravity: "auto" }, 
-            { quality: "auto" },
-            { fetch_format: "auto" }
-          ],
-          eager: [  // Multiple eager versions for responsive
-            { width: 400, height: 400, crop: "fill", gravity: "auto" },
-            { width: 800, height: 800, crop: "fill", gravity: "auto" }
-          ]
+          folder: "products",
+          public_id: publicId,
+          resource_type: "image",
+          quality: "auto:good",
         },
-        (error, result) => {
+        async (error, uploadResult) => {  // ← uploadResult di sini
           if (error) {
-            console.error('Cloudinary upload error:', error)
+            console.error('❌ Upload failed:', error)
             reject(error)
           } else {
-            console.log('Cloudinary success:', result.public_id, result.secure_url)
-            resolve(result)
+            console.log('✅ Upload OK:', uploadResult.secure_url)
+            
+            // OPTIMIZE langsung di callback
+            const optimizedUrl = cloudinary.url(uploadResult.public_id, {
+              transformation: [
+                { width: 800, height: 800, crop: "fill", gravity: "auto", quality: "auto" }
+              ]
+            })
+            
+            console.log('✨ Optimized:', optimizedUrl)
+            
+            // Resolve dengan data lengkap
+            resolve({
+              success: true,
+              url: optimizedUrl,
+              original: uploadResult.secure_url,
+              public_id: uploadResult.public_id
+            })
           }
         }
       )
-      uploadStream.end(buffer)
+      stream.end(buffer)
     })
 
-    return Response.json({ 
-      url: result.secure_url,
-      public_id: result.public_id,
-      success: true,
-      width: result.width,
-      height: result.height
-    })
+    console.log('🎉 Return result')
+    return NextResponse.json(result)  // ← Langsung return result
+
   } catch (error) {
-    console.error('Upload route error:', error)
-    return new Response(JSON.stringify({ 
-      error: "Upload failed: " + error.message 
-    }), { 
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    })
+    console.error('💥 Error:', error.message)
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
-

@@ -50,7 +50,7 @@ export default function Navbar() {
           <div className="flex items-center space-x-8">
             <Link href="/" className="flex items-center space-x-3">
               <div className="bg-white rounded-full p-3 shadow-lg">
-                <div className="w-12 h-12 relative">
+              <div className="w-12 h-12 relative">
                   <Image 
                     src='/1.png'
                     alt="FreshCamp Logo"
@@ -58,7 +58,9 @@ export default function Navbar() {
                     height={48}
                     className="rounded-full"
                   />
-                  <circle cx="50" cy="50" r="38" fill="none" stroke="#2C3E2E" strokeWidth="2" />
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="#2C3E2E" strokeWidth="2" />
+                  </svg>
                 </div>
               </div>
             </Link>

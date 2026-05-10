@@ -33,7 +33,7 @@ export default function AdminPage() {
     name: "",
     description: "",
     price: "",
-    image: "",
+    images: [],
     categoryId: ""
   })
 
@@ -228,59 +228,81 @@ const [dateTo, setDateTo] = useState('')
   }
 
   const handleImageUpload = async (e, isEdit = false) => {
-    const file = e.target.files[0]
-    if (!file) return
+  const file = e.target.files[0]
+  if (!file) return
 
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
 
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      })
-      if (!res.ok) {
-        console.error('Upload failed:', await res.text())
-        return
-      }
-      const data = await res.json()
-      console.log('✅ Upload success:', data.url, data.public_id)
-
-      if (isEdit) {
-        setEditingProduct({ ...editingProduct, image: data.url })
-      } else {
-        setNewProduct({ ...newProduct, image: data.url })
-      }
-    } catch (error) {
-      console.error('❌ Upload error:', error)
-    }
-  }
-
-  const handleCreate = async (e) => {
-    e.preventDefault()
-    setCreateError('')
-
-    if (!newProduct.categoryId) {
-      setCreateError('Please select a category')
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    })
+    
+    if (!res.ok) {
+      const error = await res.text()
+      console.error('Upload failed:', error)
       return
     }
+    
+    const data = await res.json()
+    console.log('🖼️ Image uploaded:', data.url)
 
-    try {
-      const res = await fetch("/api/admin/product", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newProduct),
-      })
-      if (!res.ok) {
-        const errText = await res.text()
-        throw new Error(errText)
-      }
-      setNewProduct({ name: "", description: "", price: "", image: "", categoryId: "" })
-      fetchProducts()
-    } catch (err) {
-      setCreateError(err.message || 'Failed to create product')
+    if (isEdit) {
+      setEditingProduct(prev => ({ ...prev, images: [data.url] }))
+    } else {
+      // CRITICAL: SET IMAGES ARRAY
+      setNewProduct(prev => ({ 
+        ...prev, 
+        images: [data.url]  // ← ARRAY!
+      }))
+      console.log('✅ newProduct.images SET:', [data.url])
     }
+  } catch (error) {
+    console.error('❌ Upload error:', error)
   }
+}
+
+
+const handleCreate = async (e) => {
+  e.preventDefault()
+  console.log('🚀 CREATE DATA:', newProduct) // ← DEBUG LOG
+  
+  setCreateError('')
+  if (!newProduct.categoryId) {
+    setCreateError('Select category')
+    return
+  }
+
+  try {
+    const createData = {
+      ...newProduct,
+      price: Number(newProduct.price),
+      images: newProduct.images || []  // FORCE ARRAY
+    }
+    console.log('📤 SENDING:', createData) // ← DEBUG
+
+    const res = await fetch("/api/admin/product", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(createData),
+    })
+    
+    if (!res.ok) {
+      const err = await res.text()
+      console.error('CREATE ERROR:', err)
+      throw new Error(err)
+    }
+    
+    // Reset form
+    setNewProduct({ name: "", description: "", price: "", images: [], categoryId: "" })
+    fetchProducts()
+  } catch (err) {
+    console.error('CREATE FAILED:', err)
+    setCreateError(err.message)
+  }
+}
 
   const handleDelete = async (id) => {
     if (!confirm('Yakin ingin menghapus produk ini?')) return
@@ -531,25 +553,32 @@ const [dateTo, setDateTo] = useState('')
                             onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
                           />
                         </div>
-                        <div>
-                          <Label>Image</Label>
-                          <Input type="file" onChange={(e) => handleImageUpload(e, false)} accept="image/*" />
-                          {newProduct.image && (
-                            <div className="mt-2">
-                              <img 
-                                src={newProduct.image} 
-                                alt="Preview" 
-                                className="w-24 h-24 object-cover rounded-lg shadow-md" 
-                                onError={(e) => {
-                                  console.error('Preview load failed:', newProduct.image)
-                                  e.target.src = '/placeholder-product.jpg'
-                                  e.target.style.opacity = '0.5'
-                                }}
-                              />
-                              <p className="text-xs text-gray-500 mt-1">Preview: {newProduct.image.slice(0,40)}...</p>
-                            </div>
-                          )}
-                        </div>
+                       <div>
+  <Label>Product Image *</Label>
+  <Input 
+    type="file" 
+    onChange={(e) => handleImageUpload(e, false)} 
+    accept="image/*" 
+  />
+  
+  {/* PREVIEW */}
+  {newProduct.images?.[0] ? (
+    <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+      <img 
+        src={newProduct.images[0]} 
+        alt="Preview" 
+        className="w-32 h-32 object-cover rounded-lg shadow-md" 
+      />
+      <p className="text-xs text-green-700 mt-1">
+        ✅ {newProduct.images[0].slice(-40)}
+      </p>
+    </div>
+  ) : (
+    <div className="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500 text-sm mt-2">
+      No image yet
+    </div>
+  )}
+</div>
                       </div>
                     </div>
                     <Button type="submit" className="w-full bg-gradient-to-r from-[#8B9D83] to-[#2C3E2E] hover:from-[#8B9D83]/90 hover:to-[#2C3E2E]/90 shadow-lg hover:shadow-xl transition-all text-lg py-6 font-semibold disabled:opacity-50">

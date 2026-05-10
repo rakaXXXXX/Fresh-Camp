@@ -10,7 +10,6 @@ export default function AdminSidebar({ activeTab, onTabChange }) {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, onClick: () => onTabChange('products') },
     { id: 'products', label: 'Products', icon: Package, onClick: () => onTabChange('products') },
     { id: 'reviews', label: 'Reviews', icon: MessageCircle, onClick: () => onTabChange('reviews') },
     { id: 'orders', label: 'Orders', icon: FileText, onClick: () => onTabChange('orders') },

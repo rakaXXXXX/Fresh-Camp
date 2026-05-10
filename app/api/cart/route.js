@@ -1,5 +1,6 @@
+import { NextResponse } from 'next/server'
 import prisma from "@/lib/prisma";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth";
 
 export const dynamic = 'force-dynamic'
@@ -7,7 +8,7 @@ export const dynamic = 'force-dynamic'
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const userId = session.user.id;
@@ -28,20 +29,20 @@ export async function GET() {
     },
   });
 
-  return Response.json(cart);
+  return NextResponse.json(cart);
 }
 
 export async function POST(req) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const userId = session.user.id;
   const { productId, quantity, size, color } = await req.json();
 
   if (!productId || quantity == null) {
-    return Response.json({ error: "Missing productId or quantity" }, { status: 400 });
+    return NextResponse.json({ error: "Missing productId or quantity" }, { status: 400 });
   }
 
   if (quantity <= 0) {
@@ -50,51 +51,39 @@ export async function POST(req) {
       where: {
         userId,
         productId,
-        size,
-        color
+        size: size || null,
+        color: color || null
       }
     });
-    return Response.json({ deleted: deleted.count });
+    return NextResponse.json({ deleted: deleted.count });
   }
 
   try {
-    // Upsert: update existing or create new
-    // Manual upsert since no @@unique index
-    // Safe manual find/update/create
-    const whereClause = {
-      userId,
-      productId
-    }
-
-    // First check if item exists (ignore optional fields for find)
+    // Find existing item with exact match on all unique fields
     const existingItems = await prisma.cartItem.findMany({
-      where: whereClause,
+      where: {
+        userId,
+        productId,
+        size: size || null,
+        color: color || null
+      },
       take: 1
-    })
+    });
 
-    const existing = existingItems[0]
+    const existing = existingItems[0];
+    let cartItem;
 
-    let cartItem
-
-    if (quantity <= 0) {
-      await prisma.cartItem.deleteMany({
-        where: {
-          userId,
-          productId
-        }
-      })
-    } else if (existing) {
+    if (existing) {
+      // Update quantity by adding to existing
       cartItem = await prisma.cartItem.update({
         where: { id: existing.id },
         data: { 
-          quantity,
-          color: color || null,
-          size: size || null
+          quantity: existing.quantity + quantity
         },
         include: {
           product: true
         }
-      })
+      });
     } else {
       cartItem = await prisma.cartItem.create({
         data: {
@@ -107,14 +96,12 @@ export async function POST(req) {
         include: {
           product: true
         }
-      })
+      });
     }
 
-    return Response.json({ success: true, cartItem });
-
-    return Response.json(cartItem);
+    return NextResponse.json({ success: true, cartItem });
   } catch (error) {
     console.error("Cart upsert error:", error);
-    return Response.json({ error: "Failed to update cart" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update cart" }, { status: 500 });
   }
 }

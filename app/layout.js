@@ -2,7 +2,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { SessionProvider } from "@/components/SessionProvider";
-import { icons } from "lucide-react";
+import { CartProvider } from "@/context/CartContext";
 import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -18,11 +18,13 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={inter.className}>
         <SessionProvider>
-          {children}
-          <Toaster />
+          <CartProvider>
+            {children}
+            <Toaster />
+          </CartProvider>
         </SessionProvider>
       </body>
-     
     </html>
   );
 }
+

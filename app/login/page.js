@@ -70,9 +70,17 @@ export default function LoginPage() {
   }
 }
 
-  const handleGoogleLogin = () => {
-    signIn('google', { callbackUrl: '/' })
+  const handleGoogleLogin = async () => {
+  console.log('🔥 Google login clicked')
+  try {
+    const result = await signIn('google', { 
+      callbackUrl: '/' 
+    })
+    console.log('Google result:', result)
+  } catch (error) {
+    console.error('Google login error:', error)
   }
+}
 
   // If user is already authenticated, they will be redirected by middleware
   // But we add this as a fallback to prevent showing login form to authenticated users
