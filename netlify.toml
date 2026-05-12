@@ -1,0 +1,26 @@
+[build]
+command = "yarn build"
+# Next.js standalone creates a self-contained server.
+# Netlify will run it via `start` script defined below.
+publish = ".next"
+
+[build.environment]
+# Ensure Next runs in production mode during build.
+NODE_ENV = "production"
+
+[functions]
+# Keep default Netlify Functions config
+
+[template]
+
+# Redirect all requests to the Next standalone server
+# (Netlify handles this via the start command).
+
+[[plugins]]
+# No plugins required for standalone server.
+
+[dev]
+command = "yarn dev"
+port = 3000
+
+

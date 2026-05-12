@@ -109,7 +109,7 @@ model Product {
   categoryId  String
   category    Category  @relation(fields: [categoryId], references: [id])
 
-  images      []
+  images      Json
   colors      String[]
   sizes       String[]
   features    String[]
