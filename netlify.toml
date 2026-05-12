@@ -16,8 +16,7 @@ NODE_ENV = "production"
 # Redirect all requests to the Next standalone server
 # (Netlify handles this via the start command).
 
-[[plugins]]
-# No plugins required for standalone server.
+
 
 [dev]
 command = "yarn dev"
