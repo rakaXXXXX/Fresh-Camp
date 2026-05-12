@@ -6,9 +6,7 @@
     "dev": "next dev --hostname 0.0.0.0 --port 3000",
     "dev:webpack": "next dev --hostname 0.0.0.0 --port 3000",
     "build": "prisma generate && next build",
-    "start:standalone": "node .next/standalone/server.js",
-    "start": "next start",
-    "netlify:start": "node .next/standalone/server.js"
+    "start": "next start"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^1.2.0",

@@ -163,15 +163,50 @@ Configure Midtrans keys in `.env`.
 ## ☁️ Deployment
 
 ### Vercel (recommended)
-```
-vercel --prod
-```
-- Set env vars in dashboard.
-- Prisma: `prisma generate` in build.
+1) Push repo ke GitHub/GitLab.
+2) Buat project baru di Vercel dari repo tersebut.
+3) Isi Environment Variables (lihat daftar di bawah).
+4) Deploy.
+
+Vercel akan menjalankan `npm/yarn build` otomatis (build kamu sudah include `prisma generate && next build`).
+
+#### Environment Variables yang wajib diisi di Vercel
+> Isi nilainya sesuai akun produksi kamu.
+
+**Auth (NextAuth / Google / JWT)**
+- `NEXTAUTH_URL` = `https://<project>.vercel.app` (atau custom domain)
+- `NEXTAUTH_SECRET` = secret panjang acak
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+
+**Database (Prisma)**
+- `DATABASE_URL` = connection string PostgreSQL
+
+**Cloudinary (image upload & display)**
+- `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`
+- `CLOUDINARY_API_KEY`
+- `CLOUDINARY_API_SECRET`
+
+**Resend (email)**
+- `RESEND_API_KEY`
+- `EMAIL_FROM` = email sender (contoh: `"Camp" <no-reply@domain.com>`) *(kalau dipakai di code kamu)*
+
+**Midtrans (payment)**
+- `MIDTRANS_MERCHANT_ID`
+- `MIDTRANS_CLIENT_KEY`
+- `MIDTRANS_SERVER_KEY`
+
+**Optional/Custom**
+- `CORS_ORIGINS` = jika kamu ingin whitelist origin tertentu (default `*` di `next.config.js`).
+
+#### Notes khusus Vercel (umum)
+- Pastikan `NEXTAUTH_URL` benar (harus pakai `https://...`). Salah value sering bikin redirect loop.
+- Prisma membutuhkan `DATABASE_URL` saat runtime.
 
 ### Railway/DigitalOcean for DB
 - PostgreSQL instance.
 - `DATABASE_URL` connection string.
+
 
 ## 📸 Screenshots
 
